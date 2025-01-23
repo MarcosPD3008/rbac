@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rbac-api-app
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=database
+      - DB_PORT=5432
+      - DB_USERNAME=rbac
+      - DB_PASSWORD=RBAC-PWD*
+      - DB_DATABASE=rbacDB
+      - DB_SYNCHRONIZE=true
+      - JWT_SECRET=9f74c3f16bd48f3e0d5fa20d8e4b3ff37e8e423fd09a6d4818cdb16cd2aa6812b7e47b4ccfc9a92b8b4e662f20a2c5a2cfc8401b53af789b349f8cf20415b0c3
+      - JWT_EXPIRES_IN=1h
+    depends_on:
+      - database
+
+  database:
+    image: postgres:13
+    container_name: rbac-api-db
+    restart: always
+    environment:
+      POSTGRES_USER: rbac
+      POSTGRES_PASSWORD: RBAC-PWD*
+      POSTGRES_DB: rbacDB
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:
