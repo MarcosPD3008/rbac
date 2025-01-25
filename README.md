@@ -141,6 +141,3 @@ To seed initial roles and permissions, create a dedicated seeder script or use m
 This project is licensed under the [MIT License](LICENSE).
 
 ---
-
-## Contributors
-- **Your Name** - [GitHub Profile](https://github.com/your-username)

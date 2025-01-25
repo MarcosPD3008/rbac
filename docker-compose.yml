@@ -17,8 +17,12 @@ services:
       - DB_SYNCHRONIZE=true
       - JWT_SECRET=9f74c3f16bd48f3e0d5fa20d8e4b3ff37e8e423fd09a6d4818cdb16cd2aa6812b7e47b4ccfc9a92b8b4e662f20a2c5a2cfc8401b53af789b349f8cf20415b0c3
       - JWT_EXPIRES_IN=1h
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - BLACKLIST_MODE=redis
     depends_on:
       - database
+      - redis
 
   database:
     image: postgres:13
@@ -32,6 +36,13 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: rbac-api-redis
+    restart: always
+    ports:
+      - "6379:6379"
 
 volumes:
   db_data:
