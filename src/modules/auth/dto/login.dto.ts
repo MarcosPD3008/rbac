@@ -18,3 +18,24 @@ export class LoginDto {
   @IsString()
   password: string;
 }
+
+export class RefreshTokenDto {
+  @ApiProperty({ description: 'Refresh token' })
+  @IsNotEmpty()
+  @IsString()
+  refreshToken: string;
+}
+
+export class AuthResponseDto {
+  @ApiProperty({
+    description: 'JWT Access Token',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+  })
+  accessToken: string;
+
+  @ApiProperty({
+    description: 'JWT Refresh Token',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+  })
+  refreshToken: string;
+}

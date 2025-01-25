@@ -18,6 +18,7 @@ import { UserRolesService } from 'src/common/services/user-roles.service';
 import { RoleToUserDto } from './dto/role-to-user.dto';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 import { Permission } from 'src/common/decorators/permission.decorator';
+import { Type } from 'class-transformer';
 
 @ApiTags('Users') // Groups all endpoints under the "Users" section in Swagger
 @Controller('users')
@@ -29,7 +30,7 @@ export class UsersController {
   ) {}
 
   @Get()
-  @Permission("Read Users")
+  @Permission("Users.Read")
   @ApiOperation({ summary: 'Retrieve all users' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -41,7 +42,7 @@ export class UsersController {
   }
 
   @Get(':id')
-  @Permission("Read User")
+  @Permission("Users.Read")
   @ApiOperation({ summary: 'Retrieve a user by ID' })
   @ApiParam({ name: 'id', description: 'User ID', example: '123e4567-e89b-12d3-a456-426614174000' })
   @ApiResponse({
@@ -58,6 +59,7 @@ export class UsersController {
   }
 
   @Post()
+  @Permission("Users.Create")
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({
@@ -74,6 +76,7 @@ export class UsersController {
   }
 
   @Post(':id/roles')
+  @Permission("Users.Update")
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Add or modify a role for a user' })
   @ApiParam({ name: 'id', description: 'User ID', example: '123e4567-e89b-12d3-a456-426614174000' })
@@ -96,6 +99,7 @@ export class UsersController {
   }
 
   @Put(':id')
+  @Permission("Users.Update")
   @ApiOperation({ summary: 'Update an existing user by ID' })
   @ApiParam({ name: 'id', description: 'User ID', example: '123e4567-e89b-12d3-a456-426614174000' })
   @ApiResponse({
@@ -119,6 +123,7 @@ export class UsersController {
   }
 
   @Delete(':id/roles/:roleId')
+  @Permission("Users.Update")
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Remove a role from a user' })
   @ApiParam({ name: 'id', description: 'User ID', example: '123e4567-e89b-12d3-a456-426614174000' })
@@ -139,6 +144,7 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @Permission("Users.Delete")
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete a user by ID' })
   @ApiParam({ name: 'id', description: 'User ID', example: '123e4567-e89b-12d3-a456-426614174000' })

@@ -11,6 +11,7 @@ This project implements a **Role-Based Access Control (RBAC)** system using **Ne
 - **Password Encryption**: Secure password storage using Argon2.
 - **Extensible Design**: Supports modular addition of roles, permissions, and other authentication strategies.
 - **Swagger Documentation**: Auto-generated API documentation for better development experience.
+- **Token Blacklist**: Support for token blacklisting to invalidate compromised or unused tokens.
 
 ---
 
@@ -21,6 +22,7 @@ This project implements a **Role-Based Access Control (RBAC)** system using **Ne
 - **TypeORM**: ORM for managing database operations.
 - **PostgreSQL**: Relational database for data storage.
 - **Argon2**: Secure password hashing.
+- **Redis(Optional)**: In-memory data store for token blacklisting.
 
 ---
 
@@ -55,24 +57,17 @@ src/
 ### Steps
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-repo/rbac-api.git
-   cd rbac-api
+   git clone https://github.com/MarcosPD3008/rbac
+   cd rbac
    ```
 2. Install dependencies:
    ```bash
    yarn install
    ```
 3. Set up environment variables:
-   Create a `.env` file in the root directory with the following:
-   ```env
-   DB_HOST=localhost
-   DB_PORT=5432
-   DB_USERNAME=rbac
-   DB_PASSWORD=RBAC-PWD*
-   DB_DATABASE=rbacDB
-   JWT_SECRET=your_jwt_secret
-   JWT_EXPIRES_IN=1h
-   ```
+   Create a `.env` file in the root directory with variables in [`.env.example`](./.env.example).:
+
+   
 4. Run the application:
    ```bash
    yarn start:dev
@@ -86,6 +81,8 @@ src/
 ## API Endpoints
 ### **Auth**
 - `POST /auth/login`: Authenticate a user and retrieve a JWT token.
+- `POST /auth/refresh`: Refresh JWT token.
+- `POST /auth/logout`: Logout and invalidate JWT token.
 
 ### **Users**
 - `GET /users`: Retrieve all users.
@@ -113,6 +110,7 @@ src/
 - Passwords are securely hashed using Argon2 before storage.
 - JWT tokens are used for stateless authentication.
 - Access control is enforced using a combination of guards and custom decorators.
+- Token blacklisting is supported to invalidate compromised or unused tokens.
 
 ---
 

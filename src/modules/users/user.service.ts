@@ -1,6 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { PostUserDto } from './dto/post-users.dto';
 import { GetUserDto } from './dto/get-users.dto';
 import { User } from './users.entity';
@@ -45,15 +45,18 @@ export class UserService {
 
   async findByUsernameOrEmail(identifier: string): Promise<User | null> {
     const user = await this.userRepository.findOne({
-      where: [{ username: identifier }, { email: identifier }],
+      where: [
+        { username: ILike(identifier) },
+        { email: ILike(identifier) }
+      ],
       relations: ['roles', 'roles.permissions'], // Include roles and permissions
-      select: ['id', 'username', 'email', 'password', "isActive"], // Explicitly include the password
+      select: ['id', 'username', 'email', 'password', 'isActive'], // Explicitly include the password
     });
-  
+
     if (!user) {
       return null;
     }
-  
+
     return user;
   }
 

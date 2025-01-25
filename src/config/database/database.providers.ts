@@ -3,6 +3,7 @@ import * as dotenv from 'dotenv';
 import { Permission } from 'src/modules/permissions/permissions.entity';
 import { User } from 'src/modules/users/users.entity';
 import { Role } from 'src/modules/roles/roles.entity';
+import { BlacklistedToken } from 'src/modules/auth/blacklist/blacklist.entity';
 
 dotenv.config();
 
@@ -13,12 +14,11 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  entities: [User, Role, Permission], // Register entities
-  migrations: ['dist/migrations/*.js'], // Adjust if needed
+  entities: [User, Role, Permission, BlacklistedToken],
+  migrations: ['dist/migrations/*.js'],
   synchronize: process.env.DB_SYNCHRONIZE === 'true',
 });
 
-// NestJS Database Providers
 export const databaseProviders = [
   {
     provide: 'DATA_SOURCE',
@@ -31,7 +31,6 @@ export const databaseProviders = [
   },
 ];
 
-// Repository Providers
 export const repositoryProviders = [
   {
     provide: 'USER_REPOSITORY',
@@ -57,4 +56,14 @@ export const repositoryProviders = [
     },
     inject: ['DATA_SOURCE'],
   },
+  {
+    provide: 'BLACKLISTED_TOKEN_REPOSITORY',
+    useFactory: (dataSource: DataSource) => {
+      const repository = dataSource.getRepository(BlacklistedToken);
+      return repository;
+    },
+    inject: ['DATA_SOURCE'],
+  }
 ];
+
+export default AppDataSource;

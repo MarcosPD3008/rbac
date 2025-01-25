@@ -6,6 +6,7 @@ import { EncryptionService } from "./services/encryption.service";
 import { JwtModule } from "@nestjs/jwt";
 import { PermissionsGuard } from "./guards/permissions.guard";
 import { JwtAuthGuard } from "./guards/jwt.guard";
+import { RedisService } from "./services/redis.service";
 
 @Module({
     imports: [
@@ -16,12 +17,14 @@ import { JwtAuthGuard } from "./guards/jwt.guard";
         PermissionsGuard, 
         UserRolesService,
         RolesPermissionsService,
-        EncryptionService
+        EncryptionService,
+        RedisService
     ],
     exports: [
         UserRolesService,
         RolesPermissionsService,
-        EncryptionService
+        EncryptionService,
+        RedisService
     ],
 })
 export class CommonModule {}

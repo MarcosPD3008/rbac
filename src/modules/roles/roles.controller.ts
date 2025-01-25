@@ -8,6 +8,7 @@ import {
     Body,
     HttpCode,
     HttpStatus,
+    UseGuards,
   } from '@nestjs/common';
   import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
   import { RolesService } from './roles.service';
@@ -15,9 +16,12 @@ import {
   import { GetRoleDto } from './dto/get-role.dto';
 import { PermissionToRoleDto } from './dto/permission-to-role.dto';
 import { RolesPermissionsService } from 'src/common/services/roles-permissions.service';
+import { PermissionsGuard } from 'src/common/guards/permissions.guard';
+import { Permission } from 'src/common/decorators/permission.decorator';
   
   @ApiTags('Roles') // Groups endpoints under the "Roles" section in Swagger
   @Controller('roles')
+  // @UseGuards(PermissionsGuard)
   export class RolesController {
     constructor(private readonly rolesService: RolesService,
                 private readonly rolesPermissionsService: RolesPermissionsService
@@ -27,6 +31,7 @@ import { RolesPermissionsService } from 'src/common/services/roles-permissions.s
      * Create a new role
      */
     @Post()
+    @Permission("Roles.Create")
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Create a new role' })
     @ApiResponse({
@@ -46,6 +51,7 @@ import { RolesPermissionsService } from 'src/common/services/roles-permissions.s
      * Add one or more permissions to a role
      */
     @Post(':id/permissions')
+    @Permission("Roles.Update")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Add permissions to a role' })
     @ApiParam({
@@ -74,6 +80,7 @@ import { RolesPermissionsService } from 'src/common/services/roles-permissions.s
      * Add one or more permissions to a role
      */
     @Delete(':id/permissions')
+    @Permission("Roles.Update")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Add permissions to a role' })
     @ApiParam({
@@ -102,6 +109,7 @@ import { RolesPermissionsService } from 'src/common/services/roles-permissions.s
      * Retrieve all roles
      */
     @Get()
+    @Permission("Roles.Read")
     @ApiOperation({ summary: 'Retrieve all roles' })
     @ApiResponse({
       status: HttpStatus.OK,
@@ -116,6 +124,7 @@ import { RolesPermissionsService } from 'src/common/services/roles-permissions.s
      * Retrieve a role by ID
      */
     @Get(':id')
+    @Permission("Roles.Read")
     @ApiOperation({ summary: 'Retrieve a role by ID' })
     @ApiParam({
       name: 'id',
@@ -139,6 +148,7 @@ import { RolesPermissionsService } from 'src/common/services/roles-permissions.s
      * Update a role by ID
      */
     @Put(':id')
+    @Permission("Roles.Update")
     @ApiOperation({ summary: 'Update a role by ID' })
     @ApiParam({
       name: 'id',
@@ -165,6 +175,7 @@ import { RolesPermissionsService } from 'src/common/services/roles-permissions.s
      * Delete a role by ID
      */
     @Delete(':id')
+    @Permission("Roles.Delete")
     @HttpCode(HttpStatus.NO_CONTENT)
     @ApiOperation({ summary: 'Delete a role by ID' })
     @ApiParam({

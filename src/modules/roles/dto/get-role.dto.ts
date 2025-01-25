@@ -20,7 +20,7 @@ export class GetRoleDto {
 
   @ApiProperty({
     description: 'List of permissions associated with the role',
-    type: [Permission], 
+    type: [GetPermissionDto], 
   })
   @Expose()
   @Type(() => GetPermissionDto) // Map permissions to GetPermissionDto
