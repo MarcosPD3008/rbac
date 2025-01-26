@@ -6,6 +6,7 @@ import { GetRoleDto } from './dto/get-role.dto';
 import { PostRoleDto } from './dto/post-role.dto';
 import { Permission } from 'src/modules/permissions/permissions.entity';
 import { In } from 'typeorm';
+import { PaginatedResult, PaginateDto } from 'src/common/entities/paginatedResult';
 
 @Injectable()
 export class RolesService {
@@ -50,11 +51,14 @@ export class RolesService {
   /**
    * Retrieve all roles
    */
-  async findAll(): Promise<GetRoleDto[]> {
-    const roles = await this.rolesRepository.find({ relations: ['permissions'] });
-    return roles.map((role) =>
-      plainToInstance(GetRoleDto, role, { excludeExtraneousValues: true }),
-    );
+  async findAll(pagination:PaginateDto, name?:string): Promise<PaginatedResult<GetRoleDto>> {
+    const query = this.rolesRepository.createQueryBuilder('role')
+
+    if(name){
+      query.where(`role.name ILIKE :name`, { name: `%${name}%` })
+    }
+
+    return query.paginate(pagination);
   }
 
   /**

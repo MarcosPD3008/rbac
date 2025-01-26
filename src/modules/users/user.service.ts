@@ -7,6 +7,7 @@ import { User } from './users.entity';
 import { BaseRepository } from 'src/common/base/base.repository';
 import { Role } from '../roles/roles.entity';
 import { EncryptionService } from 'src/common/services/encryption.service';
+import { PaginatedResult, PaginateDto } from 'src/common/entities/paginatedResult';
 
 @Injectable()
 export class UserService {
@@ -24,12 +25,14 @@ export class UserService {
     return plainToInstance(GetUserDto, savedUser, { excludeExtraneousValues: true });
   }
 
-  async findAll(): Promise<GetUserDto[]> {
-    const users = await this.userRepository.find({ relations: ['roles'] });
+  async findAll(pagination:PaginateDto, name?:string): Promise<PaginatedResult<GetUserDto>> {
+    const query = this.userRepository.createQueryBuilder('user')
 
-    return users.map((user) =>
-      plainToInstance(GetUserDto, user, { excludeExtraneousValues: true }),
-    );
+    if(name){
+      query.where(`user.username ILIKE :name`, { name: `%${name}%` })
+    }
+
+    return query.paginate(pagination);
   }
 
   async findOne(id: string): Promise<GetUserDto> {

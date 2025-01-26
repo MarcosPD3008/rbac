@@ -1,119 +1,84 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Param,
-  Body,
-  HttpCode,
-  HttpStatus,
-  UseGuards,
-} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { Body, Controller, HttpStatus, Param, Query } from '@nestjs/common';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { PostUserDto } from './dto/post-users.dto';
 import { GetUserDto } from './dto/get-users.dto';
 import { UserRolesService } from 'src/common/services/user-roles.service';
 import { RoleToUserDto } from './dto/role-to-user.dto';
-import { PermissionsGuard } from 'src/common/guards/permissions.guard';
-import { Permission } from 'src/common/decorators/permission.decorator';
-import { Type } from 'class-transformer';
+import { EndpointInfo } from 'src/common/decorators/endpoint-info.decorator';
+import { PaginatedResult, PaginateDto } from 'src/common/entities/paginatedResult';
+import { PaginatedResponse } from 'src/common/decorators/pagination.decorator';
 
 @ApiTags('Users') // Groups all endpoints under the "Users" section in Swagger
 @Controller('users')
-@UseGuards(PermissionsGuard)
 export class UsersController {
   constructor(
     private readonly userService: UserService,
     private readonly userRolesService: UserRolesService,
   ) {}
 
-  @Get()
-  @Permission("Users.Read")
-  @ApiOperation({ summary: 'Retrieve all users' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'List of all users',
-    type: [GetUserDto],
+  @PaginatedResponse(GetUserDto)
+  @EndpointInfo({
+    method: 'get',
+    permission: 'Users.Read',
+    summary: 'Retrieve all users',
+    responseType: PaginatedResult<GetUserDto>,
   })
-  async findAll(): Promise<GetUserDto[]> {
-    return this.userService.findAll();
+  @ApiQuery({
+    name: 'name',
+    required: false,
+    description: 'Filter users by name',
+    type: String,
+  })
+  async findAll(@Query() pagination:PaginateDto, 
+                @Query() name?:string): Promise<PaginatedResult<GetUserDto>> {
+    return this.userService.findAll(pagination, name);
   }
 
-  @Get(':id')
-  @Permission("Users.Read")
-  @ApiOperation({ summary: 'Retrieve a user by ID' })
-  @ApiParam({ name: 'id', description: 'User ID', example: '123e4567-e89b-12d3-a456-426614174000' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'User retrieved successfully',
-    type: GetUserDto,
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'User not found',
+  @EndpointInfo({
+    method: 'get',
+    path: ':id',
+    permission: 'Users.Read',
+    summary: 'Retrieve a user by ID',
+    responseType: GetUserDto,
   })
   async findOne(@Param('id') id: string): Promise<GetUserDto> {
     return this.userService.findOne(id);
   }
 
-  @Post()
-  @Permission("Users.Create")
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Create a new user' })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: 'User successfully created',
-    type: GetUserDto,
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid input data',
+  @EndpointInfo({
+    method: 'post',
+    permission: 'Users.Create',
+    summary: 'Create a new user',
+    responseType: GetUserDto,
+    statusCode: HttpStatus.CREATED,
   })
   async create(@Body() postUserDto: PostUserDto): Promise<GetUserDto> {
     return this.userService.create(postUserDto);
   }
 
-  @Post(':id/roles')
-  @Permission("Users.Update")
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Add or modify a role for a user' })
-  @ApiParam({ name: 'id', description: 'User ID', example: '123e4567-e89b-12d3-a456-426614174000' })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: 'Role successfully added/modified for the user',
-    type: GetUserDto,
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'User or role not found',
+  @EndpointInfo({
+    method: 'post',
+    path: ':id/roles',
+    permission: 'Users.Update',
+    summary: 'Add or modify a role for a user',
+    responseType: GetUserDto,
+    statusCode: HttpStatus.CREATED,
   })
   async addOrModifyRole(
     @Param('id') userId: string,
     @Body() addRoleDto: RoleToUserDto,
   ): Promise<GetUserDto> {
     const roleId = Array.isArray(addRoleDto.roleId) ? addRoleDto.roleId[0] : addRoleDto.roleId;
-
     return this.userRolesService.addOrChangeRole(userId, roleId);
   }
 
-  @Put(':id')
-  @Permission("Users.Update")
-  @ApiOperation({ summary: 'Update an existing user by ID' })
-  @ApiParam({ name: 'id', description: 'User ID', example: '123e4567-e89b-12d3-a456-426614174000' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'User updated successfully',
-    type: GetUserDto,
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'User not found',
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: 'Invalid input data',
+  @EndpointInfo({
+    method: 'put',
+    path: ':id',
+    permission: 'Users.Update',
+    summary: 'Update an existing user by ID',
+    responseType: GetUserDto,
   })
   async update(
     @Param('id') id: string,
@@ -122,19 +87,13 @@ export class UsersController {
     return this.userService.update(id, postUserDto);
   }
 
-  @Delete(':id/roles/:roleId')
-  @Permission("Users.Update")
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Remove a role from a user' })
-  @ApiParam({ name: 'id', description: 'User ID', example: '123e4567-e89b-12d3-a456-426614174000' })
-  @ApiParam({ name: 'roleId', description: 'Role ID', example: '123e4567-e89b-12d3-a456-426614174001' })
-  @ApiResponse({
-    status: HttpStatus.NO_CONTENT,
-    description: 'Role successfully removed from the user',
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'User or role not found',
+  @EndpointInfo({
+    method: 'delete',
+    path: ':id/roles/:roleId',
+    permission: 'Users.Update',
+    summary: 'Remove a role from a user',
+    responseType: GetUserDto,
+    statusCode: HttpStatus.NO_CONTENT,
   })
   async removeRole(
     @Param('id') userId: string,
@@ -143,18 +102,12 @@ export class UsersController {
     return this.userRolesService.removeRole(userId, roleId);
   }
 
-  @Delete(':id')
-  @Permission("Users.Delete")
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Delete a user by ID' })
-  @ApiParam({ name: 'id', description: 'User ID', example: '123e4567-e89b-12d3-a456-426614174000' })
-  @ApiResponse({
-    status: HttpStatus.NO_CONTENT,
-    description: 'User deleted successfully',
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'User not found',
+  @EndpointInfo({
+    method: 'delete',
+    path: ':id',
+    permission: 'Users.Delete',
+    summary: 'Delete a user by ID',
+    statusCode: HttpStatus.NO_CONTENT,
   })
   async remove(@Param('id') id: string): Promise<void> {
     return this.userService.remove(id);

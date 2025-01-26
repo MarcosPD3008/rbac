@@ -5,7 +5,7 @@ import { BaseRepository } from 'src/common/base/base.repository';
 import { Permission } from './permissions.entity';
 import { PostPermissionDto } from './dto/post-permissions.dto';
 import { GetPermissionDto } from './dto/get-permissions.dto';
-
+import { PaginatedResult, PaginateDto } from 'src/common/entities/paginatedResult';
 @Injectable()
 export class PermissionService {
   constructor(
@@ -20,18 +20,21 @@ export class PermissionService {
     const permission = this.permissionRepository.create(data);
     const savedPermission = await this.permissionRepository.save(permission);
     return plainToInstance(GetPermissionDto, savedPermission, {
-      excludeExtraneousValues: true,
+      excludeExtraneousValues: true, 
     });
   }
 
   /**
    * Retrieve all permissions
    */
-  async findAll(): Promise<GetPermissionDto[]> {
-    const permissions = await this.permissionRepository.find();
-    return permissions.map((permission) =>
-      plainToInstance(GetPermissionDto, permission, { excludeExtraneousValues: true }),
-    );
+  async findAll(pagination:PaginateDto, name?:string): Promise<PaginatedResult<GetPermissionDto>> {
+
+    let query = this.permissionRepository.createQueryBuilder();
+
+    if(name)
+      query = query.where("name like :name", { name: `%${name}%` });
+
+    return query.paginate(pagination, GetPermissionDto);
   }
 
   /**

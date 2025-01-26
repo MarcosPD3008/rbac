@@ -1,7 +1,8 @@
 import { Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
+import { BaseEntity } from 'typeorm';
 
-export class GetPermissionDto {
+export class GetPermissionDto extends BaseEntity{
   @ApiProperty({
     description: 'Unique identifier of the permission',
     example: '123e4567-e89b-12d3-a456-426614174001',

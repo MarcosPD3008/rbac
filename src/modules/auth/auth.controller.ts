@@ -1,9 +1,10 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Headers } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Controller, Body, Headers, HttpStatus } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { AuthResponseDto, LoginDto, RefreshTokenDto } from './dto/login.dto';
 import { Public } from 'src/common/decorators/public.decorator';
 import { LogoutDto } from './dto/logout.dto';
+import { EndpointInfo } from 'src/common/decorators/endpoint-info.decorator';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -11,43 +12,25 @@ import { LogoutDto } from './dto/logout.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  /**
-   * Logs in a user by validating credentials and returning JWT tokens.
-   * @param loginDto - Contains username or email and password.
-   * @returns JWT access and refresh tokens.
-   */
-  @Post('login')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Authenticate user and return JWT tokens' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Authentication successful, returns access and refresh tokens.',
-    type: AuthResponseDto,
-  })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid username, email, or password.',
+  @EndpointInfo({
+    method: 'post',
+    path: 'login',
+    permission: '', // Public route, no permission required
+    summary: 'Authenticate user and return JWT tokens',
+    responseType: AuthResponseDto,
+    statusCode: HttpStatus.OK,
   })
   async login(@Body() loginDto: LoginDto): Promise<AuthResponseDto> {
     return this.authService.login(loginDto.identifier, loginDto.password);
   }
 
-  /**
-   * Refreshes tokens by validating the refresh token and issuing new tokens.
-   * @param refreshTokenDto - Contains the refresh token.
-   * @returns New JWT access and refresh tokens.
-   */
-  @Post('refresh')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Refresh JWT tokens' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Tokens refreshed successfully, returns new access and refresh tokens.',
-    type: AuthResponseDto,
-  })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid or expired refresh token.',
+  @EndpointInfo({
+    method: 'post',
+    path: 'refresh',
+    permission: '', // Public route, no permission required
+    summary: 'Refresh JWT tokens',
+    responseType: AuthResponseDto,
+    statusCode: HttpStatus.OK,
   })
   async refresh(
     @Body() refreshTokenDto: RefreshTokenDto,
@@ -55,16 +38,12 @@ export class AuthController {
     return this.authService.refreshToken(refreshTokenDto.refreshToken);
   }
 
-  @Post('logout')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Logout a user and invalidate their tokens' })
-  @ApiResponse({
-    status: HttpStatus.NO_CONTENT,
-    description: 'User successfully logged out',
-  })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'Invalid tokens',
+  @EndpointInfo({
+    method: 'post',
+    path: 'logout',
+    permission: '', // Public route, no permission required
+    summary: 'Logout a user and invalidate their tokens',
+    statusCode: HttpStatus.NO_CONTENT,
   })
   async logout(
     @Headers('authorization') authorization: string,
