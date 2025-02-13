@@ -131,9 +131,11 @@ To seed initial roles and permissions, create a dedicated seeder script or use m
 ---
 
 ## Future Improvements
-- Implement refresh tokens for better token lifecycle management.
-- Add social login options (e.g., Google, Facebook).
-- Extend role-permission hierarchy for more granular control.
+   - [x] Implement refresh tokens for better token lifecycle management.
+   - Add social login options (e.g., Google, Facebook).
+   - Add support for multi-factor authentication (MFA).
+   - Add Password Policy support (e.g., password strength, expiration).
+   - Multi-tenancy/app support for managing multiple organizations.
 
 ---
 

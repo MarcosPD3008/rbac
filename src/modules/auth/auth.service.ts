@@ -1,10 +1,12 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../users/user.service';
 import { EncryptionService } from 'src/common/services/encryption.service';
 import { User } from '../users/users.entity';
 import { NotFoundError } from 'rxjs';
-import { TokenBlacklistService } from './blacklist/blacklist.service';
+import { TokenBlacklistStrategy } from './blacklist/blaclist.interface';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { AuthAction } from 'src/common/enums/auth-actions';
 
 @Injectable()
 export class AuthService {
@@ -12,7 +14,9 @@ export class AuthService {
     private readonly usersService: UserService,
     private readonly jwtService: JwtService,
     private readonly encryptionService: EncryptionService,
-    private readonly tokenBlacklistService: TokenBlacklistService
+    @Inject('BLACKLIST_SERVICE')
+    private readonly tokenBlacklist: TokenBlacklistStrategy,
+    private readonly eventEmitter: EventEmitter2
   ) {}
 
   /**
@@ -68,6 +72,8 @@ export class AuthService {
       { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' },
     );
   
+    this.eventEmitter.emit(AuthAction.LOGIN, { userId: user.id });
+
     return { accessToken, refreshToken };
   }
 
@@ -134,13 +140,15 @@ export class AuthService {
 
       // Blacklist access token
       if (accessPayload?.exp) {
-        await this.tokenBlacklistService.addToken(accessToken, accessPayload.exp * 1000);
+        await this.tokenBlacklist.addToken(accessToken, accessPayload.exp * 1000);
       }
 
       // Blacklist refresh token
       if (refreshPayload?.exp) {
-        await this.tokenBlacklistService.addToken(refreshToken, refreshPayload.exp * 1000);
+        await this.tokenBlacklist.addToken(refreshToken, refreshPayload.exp * 1000);
       }
+
+      this.eventEmitter.emit(AuthAction.LOGOUT, { userId: refreshPayload.sub });
     } catch (error) {
       throw new UnauthorizedException('Invalid tokens');
     }

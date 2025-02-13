@@ -5,6 +5,8 @@ import { Role } from 'src/modules/roles/roles.entity';
 import { plainToInstance } from 'class-transformer';
 import { GetUserDto } from 'src/modules/users/dto/get-users.dto';
 import { GetRoleDto } from 'src/modules/roles/dto/get-role.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { AuthAction } from '../enums/auth-actions';
 
 @Injectable()
 export class UserRolesService {
@@ -14,6 +16,8 @@ export class UserRolesService {
 
     @Inject('ROLE_REPOSITORY')
     private readonly roleRepository: BaseRepository<Role>,
+
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -29,6 +33,8 @@ export class UserRolesService {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
 
+    const previousRole = user.roles[0]?.id;
+
     const role = await this.roleRepository.findOne({ where: { id: roleId } });
     if (!role) {
       throw new NotFoundException(`Role with ID ${roleId} not found`);
@@ -37,6 +43,9 @@ export class UserRolesService {
     user.roles = [role];
 
     const updatedUser = await this.userRepository.save(user);
+
+    this.eventEmitter.emit(AuthAction.USER_ROLE_CHANGED, { userId, newRole: roleId, previousRole });
+
     return plainToInstance(GetUserDto, updatedUser, { excludeExtraneousValues: true });
   }
 
@@ -61,6 +70,9 @@ export class UserRolesService {
       user.roles.push(role);
     }
 
+
+    this.eventEmitter.emit(AuthAction.USER_ROLE_CHANGED, { userId, newRole: roleId });
+  
     const updatedUser = await this.userRepository.save(user);
     return plainToInstance(GetUserDto, updatedUser, { excludeExtraneousValues: true });
   }
@@ -80,6 +92,9 @@ export class UserRolesService {
     user.roles = user.roles.filter((role) => role.id !== roleId);
 
     const updatedUser = await this.userRepository.save(user);
+
+    this.eventEmitter.emit(AuthAction.USER_ROLE_DELETED, { userId, roleId });
+    
     return plainToInstance(GetUserDto, updatedUser, { excludeExtraneousValues: true });
   }
 

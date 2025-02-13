@@ -37,7 +37,7 @@ export class PermissionsController {
     type: String,
   })
   async findAll(@Query() pagination: PaginateDto,
-                @Query() name:string
+                @Query("name") name:string
   ): Promise<PaginatedResult<GetPermissionDto>> {
     return this.permissionService.findAll(pagination, name);
   }

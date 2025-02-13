@@ -6,6 +6,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './common/guards/jwt.guard';
 import { JwtModule } from '@nestjs/jwt';
+import { AuthLogsModule } from './modules/auth-logs/auth-logs.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -13,6 +15,8 @@ import { JwtModule } from '@nestjs/jwt';
     UserModule, 
     RolesModule, 
     PermissionsModule,
+    AuthLogsModule,
+    EventEmitterModule.forRoot(),
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET || 'defaultSecret',

@@ -10,7 +10,7 @@ import {
   HttpStatus,
   Query,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { RolesService } from './roles.service';
 import { PostRoleDto } from './dto/post-role.dto';
 import { GetRoleDto } from './dto/get-role.dto';
@@ -75,8 +75,14 @@ export class RolesController {
     permission: 'Roles.Read',
     summary: 'Retrieve all roles',
   })
+  @ApiQuery({
+    name: 'name',
+    required: false,
+    description: 'Filter roles by name',
+    type: String,
+  })
   async findAll(@Query() pagination:PaginateDto, 
-                @Query() name?:string): Promise<PaginatedResult<GetRoleDto>> {
+                @Query("name") name?:string): Promise<PaginatedResult<GetRoleDto>> {
     return this.rolesService.findAll(pagination, name);
   }
 

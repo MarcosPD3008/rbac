@@ -4,6 +4,7 @@ import { Permission } from 'src/modules/permissions/permissions.entity';
 import { User } from 'src/modules/users/users.entity';
 import { Role } from 'src/modules/roles/roles.entity';
 import { BlacklistedToken } from 'src/modules/auth/blacklist/blacklist.entity';
+import { AuthLog } from 'src/modules/auth-logs/auth-logs.entity';
 
 dotenv.config();
 
@@ -14,7 +15,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  entities: [User, Role, Permission, BlacklistedToken],
+  entities: [User, Role, Permission, BlacklistedToken, AuthLog],
   migrations: ['dist/migrations/*.js'],
   synchronize: process.env.DB_SYNCHRONIZE === 'true',
 });
@@ -60,6 +61,14 @@ export const repositoryProviders = [
     provide: 'BLACKLISTED_TOKEN_REPOSITORY',
     useFactory: (dataSource: DataSource) => {
       const repository = dataSource.getRepository(BlacklistedToken);
+      return repository;
+    },
+    inject: ['DATA_SOURCE'],
+  },
+  {
+    provide: 'AUTH_LOGS_REPOSITORY',
+    useFactory: (dataSource: DataSource) => {
+      const repository = dataSource.getRepository(AuthLog);
       return repository;
     },
     inject: ['DATA_SOURCE'],

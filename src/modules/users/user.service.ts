@@ -8,6 +8,8 @@ import { BaseRepository } from 'src/common/base/base.repository';
 import { Role } from '../roles/roles.entity';
 import { EncryptionService } from 'src/common/services/encryption.service';
 import { PaginatedResult, PaginateDto } from 'src/common/entities/paginatedResult';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { AuthAction } from 'src/common/enums/auth-actions';
 
 @Injectable()
 export class UserService {
@@ -15,6 +17,7 @@ export class UserService {
     @Inject('USER_REPOSITORY')
     private readonly userRepository: BaseRepository<User>,
     private readonly encryptService: EncryptionService,
+    private readonly eventEmitter: EventEmitter2
   ) {}
 
   async create(postUserDto: PostUserDto): Promise<GetUserDto> {
@@ -22,13 +25,16 @@ export class UserService {
 
     const user = this.userRepository.create(postUserDto);
     const savedUser = await this.userRepository.save(user);
+
+    this.eventEmitter.emit(AuthAction.USER_CREATED, { userId: savedUser.id });
+
     return plainToInstance(GetUserDto, savedUser, { excludeExtraneousValues: true });
   }
 
   async findAll(pagination:PaginateDto, name?:string): Promise<PaginatedResult<GetUserDto>> {
     const query = this.userRepository.createQueryBuilder('user')
 
-    if(name){
+    if(name !== undefined && name !== ''){
       query.where(`user.username ILIKE :name`, { name: `%${name}%` })
     }
 
@@ -70,6 +76,9 @@ export class UserService {
     }
 
     const updatedUser = await this.userRepository.save({ ...existingUser, ...postUserDto });
+
+    this.eventEmitter.emit(AuthAction.USER_UPDATED, { userId: updatedUser.id, details: postUserDto });
+
     return plainToInstance(GetUserDto, updatedUser, { excludeExtraneousValues: true });
   }
 
@@ -77,6 +86,9 @@ export class UserService {
     const result = await this.userRepository.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    else {
+      this.eventEmitter.emit(AuthAction.USER_DEACTIVATED, { userId: id });
     }
   }
 }

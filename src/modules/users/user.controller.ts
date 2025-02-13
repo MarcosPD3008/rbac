@@ -31,7 +31,7 @@ export class UsersController {
     type: String,
   })
   async findAll(@Query() pagination:PaginateDto, 
-                @Query() name?:string): Promise<PaginatedResult<GetUserDto>> {
+                @Query("name") name?:string): Promise<PaginatedResult<GetUserDto>> {
     return this.userService.findAll(pagination, name);
   }
 
